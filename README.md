@@ -79,5 +79,5 @@ the-c-suite/
 ├── marketplace/plugins/  # 🔌 Claude Code plugins
 ├── oc-plugins/           # 🔌 OpenCode plugins (read each README)
 ├── commands/             # 📋 Agent commands (setup, sync, uninstall)
-└── scripts/              # ⚙️ Bootstrap and sync scripts
+└── setup.py              # ⚙️ Bootstrap and sync script
 ```

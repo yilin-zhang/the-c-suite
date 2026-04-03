@@ -7,14 +7,10 @@ Set up the-c-suite repository from scratch.
 
 ## Steps
 
-1. **Check dependencies**: Run `command -v jq`. If missing, ask the user
-   which package manager they use and install it:
-   - macOS: `brew install jq`
-   - Debian/Ubuntu: `sudo apt-get install -y jq`
-   - Fedora: `sudo dnf install -y jq`
-   - Arch: `sudo pacman -S jq`
+1. **Check dependencies**: Run `command -v python3`. If missing, ask the
+   user to install Python 3.
 
-2. **Locate the repo**: Look for `scripts/setup.sh` relative to the current
+2. **Locate the repo**: Look for `setup.py` relative to the current
    working directory, or at `~/the-c-suite`. If not found, ask the user
    where to clone it, then run:
    ```
@@ -23,21 +19,20 @@ Set up the-c-suite repository from scratch.
 
 3. **Dry run**: Preview what will be synced:
    ```
-   bash <repo-root>/scripts/setup.sh --dry-run --verbose
+   python3 <repo-root>/setup.py --dry-run --verbose
    ```
    Show the output to the user and ask if it looks good.
 
 4. **Sync skills and OpenCode plugins**: Run for real:
    ```
-   bash <repo-root>/scripts/setup.sh --verbose
+   python3 <repo-root>/setup.py --verbose
    ```
    The script symlinks each skill directory into the target agent
-   directories and symlinks OpenCode plugin/command files.
+   directories, copies OpenCode `.ts` plugins, and symlinks OpenCode
+   `.md` commands.
 
 5. **OpenCode plugins**: For each directory under `<repo-root>/oc-plugins/`,
-   read its `README.md` and follow the setup instructions there (typically
-   symlinking `.ts` files to `~/.config/opencode/plugin/` and `.md` command
-   files to `~/.config/opencode/command/`).
+   read its `README.md` and follow any additional setup instructions there.
 
 6. **Claude Code plugins**: Register the local marketplace and install
    plugins:

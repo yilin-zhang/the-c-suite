@@ -13,13 +13,13 @@ pulling new changes.
 
 2. **Sync skills and OpenCode plugins**:
    ```
-   bash <repo-root>/scripts/setup.sh --verbose
+   python3 <repo-root>/setup.py --verbose
    ```
    If the user passed `--dry-run`, add `--dry-run` to the command.
 
 3. **OpenCode plugins**: For each directory under `<repo-root>/oc-plugins/`,
    read its `README.md` and follow the setup instructions there to ensure
-   symlinks are in place.
+   files are in place.
 
 4. **Claude Code plugins**: Run `claude plugin update <name>` for each
    installed the-c-suite plugin to pick up any changes. You can check
@@ -32,4 +32,3 @@ pulling new changes.
 - The script is idempotent — running it multiple times is safe.
 - "WARN" entries mean a non-symlink file already exists at the destination.
   The user may need to remove it manually if they want the symlink instead.
-- Requires `jq`.
