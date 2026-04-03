@@ -17,4 +17,12 @@ jobs:
       - uses: astral-sh/setup-uv@v4
 
       - name: Run tests
-        run: uv run --with pytest --with pyyaml pytest tests/ marketplace/plugins/macnotify/tests/ -v
+        run: uv run --with pytest --with pyyaml pytest tests/ -v
+
+      - name: Run plugin CI scripts
+        run: |
+          for ci in marketplace/plugins/*/ci.sh; do
+            [ -f "$ci" ] || continue
+            echo "--- Running $(dirname $ci | xargs basename) CI ---"
+            bash "$ci"
+          done

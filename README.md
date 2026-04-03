@@ -79,5 +79,34 @@ the-c-suite/
 ├── marketplace/plugins/  # 🔌 Claude Code plugins
 ├── oc-plugins/           # 🔌 OpenCode plugins (read each README)
 ├── commands/             # 📋 Agent commands (setup, sync, uninstall)
+├── tests/                # 🧪 Global tests
 └── setup.py              # ⚙️ Bootstrap and sync script
 ```
+
+## 🧑‍💻 Contributing
+
+### Adding a skill
+
+1. Create `skills/<name>/SKILL.md` with YAML frontmatter following the
+   [agentskills.io spec](https://agentskills.io/specification) (`name`,
+   `description` required, `name` must match directory name).
+2. Register it in `skills/config.json` with the target agents.
+3. Tests in `tests/test_skills.py` will automatically validate it.
+
+### Adding a Claude Code plugin
+
+1. Create `marketplace/plugins/<name>/` with `.claude-plugin/plugin.json`,
+   `hooks/hooks.json`, and any commands/scripts.
+2. Add it to `marketplace/.claude-plugin/marketplace.json`.
+3. If the plugin has its own tests, add a `ci.sh` script at the plugin
+   root that runs them. CI auto-discovers and runs every `ci.sh` found
+   under `marketplace/plugins/`.
+4. Tests in `tests/test_plugins.py` will automatically validate plugin
+   manifest integrity (JSON, referenced files exist, scripts executable).
+
+### Adding an OpenCode plugin
+
+1. Create `oc-plugins/<name>/` with the `.ts` plugin file, any `.md`
+   command files, and a `README.md` with setup/uninstall instructions.
+2. `setup.py` will auto-discover it. `.ts` files are copied (not
+   symlinked), `.md` commands are symlinked.
