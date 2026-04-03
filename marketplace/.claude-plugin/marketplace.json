@@ -1,0 +1,23 @@
+{
+  "name": "the-c-suite",
+  "owner": {
+    "name": "Yilin Zhang"
+  },
+  "plugins": [
+    {
+      "name": "cc-tts",
+      "source": "./plugins/cc-tts",
+      "description": "Text-to-speech for Claude Code. Reads assistant responses aloud using edge-tts."
+    },
+    {
+      "name": "macnotify",
+      "source": "./plugins/macnotify",
+      "description": "macOS notifications for Claude Code events: response complete and permission requests."
+    },
+    {
+      "name": "claude-hud",
+      "source": "./plugins/claude-hud",
+      "description": "Real-time statusline showing context usage, active tools, running agents, and todo progress. Always visible below your input, zero config required."
+    }
+  ]
+}

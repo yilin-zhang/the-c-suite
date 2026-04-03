@@ -1,0 +1,51 @@
+{
+  "skills": {
+    "batch": {
+      "agents": ["codex", "opencode"],
+      "comment": "Extracted from Claude Code"
+    },
+    "commit": {
+      "agents": ["codex", "opencode"],
+      "comment": "Extracted from Claude Code"
+    },
+    "review": {
+      "agents": ["codex", "opencode"],
+      "comment": "Extracted from Claude Code"
+    },
+    "simplify": {
+      "agents": ["codex", "opencode"],
+      "comment": "Extracted from Claude Code"
+    },
+    "skillify": {
+      "agents": ["codex", "opencode"],
+      "comment": "Extracted from Claude Code"
+    },
+    "verify": {
+      "agents": ["codex", "opencode"],
+      "comment": "Extracted from Claude Code"
+    },
+    "elisp-nav": {
+      "agents": "all"
+    },
+    "elisp-pkg-audit": {
+      "agents": "all"
+    },
+    "epub-cleanup": {
+      "agents": "all"
+    },
+    "emacsclient": {
+      "agents": "all"
+    },
+    "index-codebase": {
+      "agents": "all"
+    },
+    "pdf": {
+      "agents": "all"
+    }
+  },
+  "paths": {
+    "claude-code": "~/.claude/skills",
+    "opencode": "~/.config/opencode/skills",
+    "codex": "~/.codex/skills"
+  }
+}

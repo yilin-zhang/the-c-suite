@@ -1,0 +1,7 @@
+{
+  "name": "macnotify",
+  "description": "macOS notifications for Claude Code events: response complete and permission requests.",
+  "version": "0.1.0",
+  "author": { "name": "yilinzhang" },
+  "commands": ["./commands/settings.md"]
+}

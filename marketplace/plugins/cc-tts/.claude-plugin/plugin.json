@@ -1,0 +1,13 @@
+{
+  "name": "cc-tts",
+  "description": "Text-to-speech for Claude Code. Reads assistant responses aloud using edge-tts. Toggle with /tts.",
+  "version": "0.1.0",
+  "author": { "name": "yilinzhang" },
+  "commands": [
+    "./commands/on.md",
+    "./commands/off.md",
+    "./commands/stop.md",
+    "./commands/setup.md",
+    "./commands/settings.md"
+  ]
+}
