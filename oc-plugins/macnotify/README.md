@@ -4,19 +4,25 @@ macOS notifications for OpenCode events.
 
 ## Setup
 
-If you're an AI agent, create these symlinks:
+If you're an AI agent, install the plugin:
 
 ```bash
-ln -s <this-dir>/macnotify.ts ~/.config/opencode/plugins/macnotify.ts
+# Copy the .ts file (symlinks don't work — imports break)
+cp <this-dir>/macnotify.ts ~/.config/opencode/plugins/macnotify.ts
+
+# Symlink the command
 ln -s <this-dir>/macnotify-toggle.md ~/.config/opencode/commands/macnotify-toggle.md
 ```
 
 Where `<this-dir>` is the absolute path to this directory. Create the
-target directories if they don't exist.
+target directories if they don't exist. Restart OpenCode after setup.
+
+If a `.ts` file already exists at the destination, ask the user for
+confirmation before overwriting.
 
 ## Uninstall
 
-Remove the symlinks:
+Remove the installed files:
 
 ```bash
 rm ~/.config/opencode/plugins/macnotify.ts

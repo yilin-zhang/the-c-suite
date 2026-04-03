@@ -61,7 +61,8 @@ Installed via local marketplace (`claude plugin marketplace add`).
 
 ### OpenCode
 
-Symlinked into `~/.config/opencode/plugins/` and `~/.config/opencode/commands/`.
+`.ts` files are copied (not symlinked — imports break with symlinks).
+`.md` commands are symlinked into `~/.config/opencode/commands/`.
 
 | Plugin | Description |
 |---|---|

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Symlink OpenCode plugin and command files into ~/.config/opencode/.
+# Copy OpenCode .ts plugins, symlink .md commands into ~/.config/opencode/.
+# .ts files must be copied (not symlinked) because OpenCode resolves
+# imports relative to the file's real path, and symlinks break that.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -22,6 +24,25 @@ for arg in "$@"; do
 done
 
 log() { $VERBOSE && echo "  $*" || true; }
+
+copy_file() {
+  local src="$1" dest="$2"
+
+  if [[ -f "$dest" ]] && diff -q "$src" "$dest" &>/dev/null; then
+    log "SKIP: $dest (already up to date)"
+    ((SKIPPED++)) || true
+    return
+  fi
+
+  if $DRY_RUN; then
+    echo "  [dry-run] cp $src → $dest"
+  else
+    mkdir -p "$(dirname "$dest")"
+    cp "$src" "$dest"
+    log "COPIED: $src → $dest"
+  fi
+  ((CREATED++)) || true
+}
 
 symlink_file() {
   local src="$1" dest="$2"
@@ -62,7 +83,7 @@ fi
 for plugin_dir in "$OC_SRC"/*/; do
   [[ -d "$plugin_dir" ]] || continue
 
-  # Symlink .ts plugin files
+  # Copy .ts plugin files (not symlink — imports break with symlinks)
   for ts_file in "$plugin_dir"*.ts; do
     [[ -f "$ts_file" ]] || continue
     # Skip test files
@@ -70,7 +91,7 @@ for plugin_dir in "$OC_SRC"/*/; do
       *.test.ts|*.spec.ts) continue ;;
     esac
     filename="$(basename "$ts_file")"
-    symlink_file "$ts_file" "$OC_PLUGIN_DEST/$filename"
+    copy_file "$ts_file" "$OC_PLUGIN_DEST/$filename"
   done
 
   # Symlink .md command files
