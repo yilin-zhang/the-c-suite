@@ -1,36 +1,32 @@
 # The C-Suite
 
-The **C**laude Code, Open**C**ode, and **C**odex suite — skills and
-plugins for your AI agents, and you, a C-Suite level engineer.
+The Claude Code, OpenCode, Codex, and pi suite — skills and plugins for
+your AI agents.
 
-## 🚀 Setup
+## Setup / Sync / Uninstall
 
-If you're an AI agent, read `commands/setup.md` and follow it.
+If you're an AI agent:
+- setup: read `commands/setup.md`
+- after `git pull`: read `commands/sync.md`
+- uninstall: read `commands/uninstall.md`
 
-## 🔄 Updating
+## What lives here
 
-After `git pull`, read `commands/sync.md` and follow it.
+- `skills/` — shared agent skills (`SKILL.md` per skill)
+- `skills/config.json` — target agent mappings and install paths
+- `marketplace/plugins/` — Claude Code plugins
+- `oc-plugins/` — OpenCode plugins
+- `commands/` — operator instructions for setup, sync, uninstall
+- `tests/` — repo validation
+- `setup.py` — sync script for skills and OpenCode plugins
 
-## 🗑️ Uninstalling
+## Notes
 
-Read `commands/uninstall.md` and follow it.
+- Skills are installed from `skills/config.json`.
+- For exact setup behavior, read `commands/setup.md` rather than this
+  README.
 
-## ⚙️ How It Works
-
-Each skill directory is **symlinked** individually into each agent's
-skills directory (e.g. `~/.claude/skills/pdf` -> `the-c-suite/skills/pdf`).
-The skills directories themselves are regular directories, not symlinks.
-
-Claude Code plugins are installed through a **local marketplace**
-registered via `claude plugin marketplace add`. OpenCode `.ts` plugins
-are copied (not symlinked — imports break with symlinks). OpenCode `.md`
-commands are symlinked.
-
-Skills update instantly on `git pull` (symlinks). Claude Code plugins
-need to be upgraded inside Claude Code after pulling. OpenCode `.ts`
-plugins need to be re-synced after pulling.
-
-## 🧠 Skills
+## Skills
 
 Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
 
@@ -49,11 +45,9 @@ Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
 | 🗂️ index-codebase | all | Generate structured feature specs for a codebase |
 | 📄 pdf | all | Read, merge, split, rotate, watermark, fill forms, OCR PDFs |
 
-## 🔌 Plugins
+## Plugins
 
 ### Claude Code
-
-Installed via local marketplace (`claude plugin marketplace add`).
 
 | Plugin | Description |
 |---|---|
@@ -63,25 +57,9 @@ Installed via local marketplace (`claude plugin marketplace add`).
 
 ### OpenCode
 
-`.ts` files are copied (not symlinked — imports break with symlinks).
-`.md` commands are symlinked into `~/.config/opencode/commands/`.
-
 | Plugin | Description |
 |---|---|
 | 🔔 macnotify | macOS notifications for OpenCode events |
-
-## 📁 Directory Layout
-
-```
-the-c-suite/
-├── skills/               # 🧠 Agent skills (SKILL.md per skill)
-│   └── config.json       # Skill → agent mapping and target paths
-├── marketplace/plugins/  # 🔌 Claude Code plugins
-├── oc-plugins/           # 🔌 OpenCode plugins (read each README)
-├── commands/             # 📋 Agent commands (setup, sync, uninstall)
-├── tests/                # 🧪 Global tests
-└── setup.py              # ⚙️ Bootstrap and sync script
-```
 
 ## 🧑‍💻 Contributing
 

@@ -1,27 +1,27 @@
 {
   "skills": {
     "batch": {
-      "agents": ["codex", "opencode"],
+      "agents": ["codex", "opencode", "pi"],
       "comment": "Extracted from Claude Code"
     },
     "commit": {
-      "agents": ["codex", "opencode"],
+      "agents": ["codex", "opencode", "pi"],
       "comment": "Extracted from Claude Code"
     },
     "review": {
-      "agents": ["codex", "opencode"],
+      "agents": ["codex", "opencode", "pi"],
       "comment": "Extracted from Claude Code"
     },
     "simplify": {
-      "agents": ["codex", "opencode"],
+      "agents": ["codex", "opencode", "pi"],
       "comment": "Extracted from Claude Code"
     },
     "skillify": {
-      "agents": ["codex", "opencode"],
+      "agents": ["codex", "opencode", "pi"],
       "comment": "Extracted from Claude Code"
     },
     "verify": {
-      "agents": ["codex", "opencode"],
+      "agents": ["codex", "opencode", "pi"],
       "comment": "Extracted from Claude Code"
     },
     "elisp-nav": {
@@ -46,6 +46,7 @@
   "paths": {
     "claude-code": "~/.claude/skills",
     "opencode": "~/.config/opencode/skills",
-    "codex": "~/.codex/skills"
+    "codex": "~/.codex/skills",
+    "pi": "~/.pi/agent/skills"
   }
 }

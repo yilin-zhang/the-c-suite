@@ -40,7 +40,7 @@ def test_config_paths_are_unique(config):
 
 
 def test_config_paths_have_expected_agents(config):
-    expected = {"claude-code", "opencode", "codex"}
+    expected = {"claude-code", "opencode", "codex", "pi"}
     assert set(config["paths"].keys()) == expected
 
 
