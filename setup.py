@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bootstrap the-c-suite: sync skills and OpenCode plugins."""
+"""Bootstrap the-c-suite: sync skills, OpenCode plugins, and pi plugins."""
 
 import argparse
 import json
@@ -130,22 +130,109 @@ def sync_oc_plugins(dry_run: bool, verbose: bool) -> dict:
     return stats
 
 
+def load_json_file(path: Path) -> dict:
+    """Load a JSON file if it exists, otherwise return an empty object."""
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text())
+
+
+def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
+    """Register pi plugins in ~/.pi/agent/settings.json via the extensions array."""
+    stats = {"synced": 0, "skipped": 0, "warned": 0}
+    pi_src = REPO_DIR / "pi-plugins"
+    settings_path = Path.home() / ".pi" / "agent" / "settings.json"
+
+    if not pi_src.is_dir():
+        if verbose:
+            print(f"No pi-plugins directory found at {pi_src}")
+        return stats
+
+    plugin_paths = []
+    for plugin_dir in sorted(pi_src.iterdir()):
+        if not plugin_dir.is_dir():
+            continue
+        entrypoint = plugin_dir / "index.ts"
+        if not entrypoint.is_file():
+            if verbose:
+                print(f"  WARN: missing entrypoint {entrypoint}")
+            stats["warned"] += 1
+            continue
+        plugin_paths.append(str(entrypoint.resolve()))
+
+    if not plugin_paths:
+        return stats
+
+    try:
+        settings = load_json_file(settings_path)
+    except Exception as exc:
+        print(f"Error: failed to read {settings_path}: {exc}", file=sys.stderr)
+        stats["warned"] += 1
+        return stats
+
+    existing_extensions = settings.get("extensions", [])
+    if not isinstance(existing_extensions, list):
+        if verbose:
+            print(f"  WARN: {settings_path} has non-list 'extensions'; skipping pi plugin sync")
+        stats["warned"] += 1
+        return stats
+
+    added = []
+    next_extensions = list(existing_extensions)
+    for plugin_path in plugin_paths:
+        if plugin_path in next_extensions:
+            if verbose:
+                print(f"  SKIP: {plugin_path} (already configured)")
+            stats["skipped"] += 1
+            continue
+        next_extensions.append(plugin_path)
+        added.append(plugin_path)
+
+    if not added:
+        return stats
+
+    updated_settings = dict(settings)
+    updated_settings["extensions"] = next_extensions
+
+    if dry_run:
+        for plugin_path in added:
+            print(f"  [dry-run] add pi extension {plugin_path} to {settings_path}")
+    else:
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(updated_settings, indent=2) + "\n")
+        if verbose:
+            for plugin_path in added:
+                print(f"  ADDED: {plugin_path} → {settings_path}#extensions")
+
+    stats["synced"] += len(added)
+    return stats
+
+
 def main():
     parser = argparse.ArgumentParser(description="Bootstrap the-c-suite")
     parser.add_argument("--dry-run", action="store_true", help="Preview without making changes")
     parser.add_argument("--verbose", action="store_true", help="Print every action")
     parser.add_argument("--skills-only", action="store_true")
     parser.add_argument("--oc-only", action="store_true")
+    parser.add_argument("--pi-only", action="store_true")
     args = parser.parse_args()
 
-    do_skills = not args.oc_only
-    do_oc = not args.skills_only
+    selected_modes = [args.skills_only, args.oc_only, args.pi_only]
+    if sum(bool(flag) for flag in selected_modes) > 1:
+        print("Error: use at most one of --skills-only, --oc-only, or --pi-only", file=sys.stderr)
+        sys.exit(2)
+
+    do_skills = not args.oc_only and not args.pi_only
+    do_oc = not args.skills_only and not args.pi_only
+    do_pi = not args.skills_only and not args.oc_only
 
     steps = []
     if do_skills:
         steps.append(("Syncing skills", sync_skills))
     if do_oc:
         steps.append(("Syncing OpenCode plugins", sync_oc_plugins))
+    if do_pi:
+        steps.append(("Syncing pi plugins", sync_pi_plugins))
 
     print("the-c-suite setup")
     print("==================\n")

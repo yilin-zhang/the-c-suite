@@ -16,13 +16,17 @@ If you're an AI agent:
 - `skills/config.json` — target agent mappings and install paths
 - `marketplace/plugins/` — Claude Code plugins
 - `oc-plugins/` — OpenCode plugins
+- `pi-plugins/` — pi plugins
 - `commands/` — operator instructions for setup, sync, uninstall
 - `tests/` — repo validation
-- `setup.py` — sync script for skills and OpenCode plugins
+- `setup.py` — sync script for skills, OpenCode plugins, and pi plugins
 
 ## Notes
 
 - Skills are installed from `skills/config.json`.
+- OpenCode plugins are synced by `setup.py`.
+- pi plugins are synced by `setup.py` into `~/.pi/agent/settings.json`
+  via the `extensions` array.
 - For exact setup behavior, read `commands/setup.md` rather than this
   README.
 
@@ -61,6 +65,12 @@ Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
 |---|---|
 | 🔔 macnotify | macOS notifications for OpenCode events |
 
+### pi
+
+| Plugin | Description |
+|---|---|
+| 🔔 macnotify | macOS notifications for pi events |
+
 ## 🧑‍💻 Contributing
 
 ### Adding a skill
@@ -88,3 +98,10 @@ Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
    command files, and a `README.md` with setup/uninstall instructions.
 2. `setup.py` will auto-discover it. `.ts` files are copied (not
    symlinked), `.md` commands are symlinked.
+
+### Adding a pi plugin
+
+1. Create `pi-plugins/<name>/index.ts` as the extension entrypoint.
+2. Add a `README.md` with usage and config instructions.
+3. `setup.py` will auto-discover it and add the absolute `index.ts` path
+   to `~/.pi/agent/settings.json` under `extensions`.
