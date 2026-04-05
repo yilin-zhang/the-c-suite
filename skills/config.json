@@ -39,6 +39,9 @@
     "index-codebase": {
       "agents": "all"
     },
+    "worklog": {
+      "agents": "all"
+    },
     "pdf": {
       "agents": "all"
     }
