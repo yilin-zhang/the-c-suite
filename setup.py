@@ -137,17 +137,8 @@ def load_json_file(path: Path) -> dict:
     return json.loads(path.read_text())
 
 
-def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
-    """Register pi plugins in ~/.pi/agent/settings.json via the extensions array."""
-    stats = {"synced": 0, "skipped": 0, "warned": 0}
-    pi_src = REPO_DIR / "pi-plugins"
-    settings_path = Path.home() / ".pi" / "agent" / "settings.json"
-
-    if not pi_src.is_dir():
-        if verbose:
-            print(f"No pi-plugins directory found at {pi_src}")
-        return stats
-
+def discover_pi_plugin_paths(pi_src: Path, verbose: bool, stats: dict) -> list[str]:
+    """Return absolute pi plugin entrypoints discovered under pi-plugins/."""
     plugin_paths = []
     for plugin_dir in sorted(pi_src.iterdir()):
         if not plugin_dir.is_dir():
@@ -159,7 +150,21 @@ def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
             stats["warned"] += 1
             continue
         plugin_paths.append(str(entrypoint.resolve()))
+    return plugin_paths
 
+
+def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
+    """Register pi plugins in ~/.pi/agent/settings.json via the extensions array."""
+    stats = {"synced": 0, "skipped": 0, "warned": 0}
+    pi_src = REPO_DIR / "pi-plugins"
+    settings_path = Path.home() / ".pi" / "agent" / "settings.json"
+
+    if not pi_src.is_dir():
+        if verbose:
+            print(f"No pi-plugins directory found at {pi_src}")
+        return stats
+
+    plugin_paths = discover_pi_plugin_paths(pi_src, verbose, stats)
     if not plugin_paths:
         return stats
 
@@ -177,8 +182,14 @@ def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
         stats["warned"] += 1
         return stats
 
-    added = []
-    next_extensions = list(existing_extensions)
+    managed_prefix = str(pi_src.resolve()) + "/"
+    managed_current = [path for path in existing_extensions if isinstance(path, str) and path.startswith(managed_prefix)]
+    unmanaged = [path for path in existing_extensions if not (isinstance(path, str) and path.startswith(managed_prefix))]
+
+    next_extensions = list(unmanaged)
+    changes = []
+
+    removed = [path for path in managed_current if path not in plugin_paths]
     for plugin_path in plugin_paths:
         if plugin_path in next_extensions:
             if verbose:
@@ -186,25 +197,33 @@ def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
             stats["skipped"] += 1
             continue
         next_extensions.append(plugin_path)
-        added.append(plugin_path)
+        if plugin_path in managed_current:
+            if verbose:
+                print(f"  SKIP: {plugin_path} (already configured)")
+            stats["skipped"] += 1
+        else:
+            changes.append(("add", plugin_path))
 
-    if not added:
+    for plugin_path in removed:
+        changes.append(("remove", plugin_path))
+
+    if not changes:
         return stats
 
     updated_settings = dict(settings)
     updated_settings["extensions"] = next_extensions
 
     if dry_run:
-        for plugin_path in added:
-            print(f"  [dry-run] add pi extension {plugin_path} to {settings_path}")
+        for action, plugin_path in changes:
+            print(f"  [dry-run] {action} pi extension {plugin_path} in {settings_path}")
     else:
         settings_path.parent.mkdir(parents=True, exist_ok=True)
         settings_path.write_text(json.dumps(updated_settings, indent=2) + "\n")
         if verbose:
-            for plugin_path in added:
-                print(f"  ADDED: {plugin_path} → {settings_path}#extensions")
+            for action, plugin_path in changes:
+                print(f"  {action.upper()}: {plugin_path} ↔ {settings_path}#extensions")
 
-    stats["synced"] += len(added)
+    stats["synced"] += len(changes)
     return stats
 
 

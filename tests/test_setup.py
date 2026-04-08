@@ -120,3 +120,50 @@ class TestCopyFile:
 
         assert dest.read_bytes() == src.read_bytes()
         assert stats["synced"] == 1
+
+
+class TestSyncPiPlugins:
+    def test_discover_pi_plugin_paths(self):
+        stats = {"synced": 0, "skipped": 0, "warned": 0}
+        pi_src = REPO_DIR / "pi-plugins"
+
+        plugin_paths = setup.discover_pi_plugin_paths(pi_src, verbose=False, stats=stats)
+
+        assert plugin_paths
+        assert all(path.endswith("/index.ts") for path in plugin_paths)
+
+    def test_sync_pi_plugins_adds_missing_plugins(self, tmp_path, monkeypatch):
+        home = tmp_path / "home"
+        settings_path = home / ".pi" / "agent" / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text('{"extensions": ["/tmp/existing.ts"]}\n')
+
+        monkeypatch.setattr(setup, "REPO_DIR", REPO_DIR)
+        monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+
+        stats = setup.sync_pi_plugins(dry_run=False, verbose=False)
+        settings = setup.load_json_file(settings_path)
+        plugin_paths = setup.discover_pi_plugin_paths(REPO_DIR / "pi-plugins", verbose=False, stats={"synced": 0, "skipped": 0, "warned": 0})
+
+        assert stats["synced"] == len(plugin_paths)
+        assert settings["extensions"][0] == "/tmp/existing.ts"
+        assert settings["extensions"][1:] == plugin_paths
+
+    def test_sync_pi_plugins_removes_stale_managed_entries(self, tmp_path, monkeypatch):
+        home = tmp_path / "home"
+        settings_path = home / ".pi" / "agent" / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        stale = str((REPO_DIR / "pi-plugins" / "stale-plugin" / "index.ts").resolve())
+        settings_path.write_text(
+            '{"extensions": ["/tmp/existing.ts", ' + repr(stale).replace("'", '"') + ']}\n'
+        )
+
+        monkeypatch.setattr(setup, "REPO_DIR", REPO_DIR)
+        monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+
+        stats = setup.sync_pi_plugins(dry_run=False, verbose=False)
+        settings = setup.load_json_file(settings_path)
+
+        assert stale not in settings["extensions"]
+        assert "/tmp/existing.ts" in settings["extensions"]
+        assert stats["synced"] >= 1

@@ -36,18 +36,19 @@ Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
 
 | Skill | Agents | Description |
 |---|---|---|
-| 🔀 batch | codex, opencode | Parallel work orchestration for large-scale refactors |
-| 💾 commit | codex, opencode | Safe git commit creation with style matching |
-| 🔍 review | codex, opencode | Code review for PRs (correctness, conventions, security) |
-| ✨ simplify | codex, opencode | Code cleanup pass with parallel review agents |
-| 🛠️ skillify | codex, opencode | Capture a repeatable process as a reusable skill |
-| ✅ verify | codex, opencode | Verify code changes by actually running them |
+| 🔀 batch | codex, opencode, pi | Parallel work orchestration for large-scale refactors |
+| 💾 commit | codex, opencode, pi | Safe git commit creation with style matching |
+| 🔍 review | codex, opencode, pi | Code review for PRs (correctness, conventions, security) |
+| ✨ simplify | codex, opencode, pi | Code cleanup pass with parallel review agents |
+| 🛠️ skillify | codex, opencode, pi | Capture a repeatable process as a reusable skill |
+| ✅ verify | codex, opencode, pi | Verify code changes by actually running them |
 | 🔎 elisp-nav | all | Fast Emacs Lisp navigation (definitions, references, forms) |
 | 📦 elisp-pkg-audit | all | Audit and selectively upgrade Emacs packages |
 | 🖥️ emacsclient | all | Always use emacsclient for Emacs operations |
 | 📚 epub-cleanup | all | Clean and normalize EPUB/KEPUB files |
 | 🗂️ index-codebase | all | Generate structured feature specs for a codebase |
 | 📄 pdf | all | Read, merge, split, rotate, watermark, fill forms, OCR PDFs |
+| 📝 worklog | all | Daily worklog workflow for planning, syncing notes, and dashboard upkeep |
 
 ## Plugins
 
@@ -69,7 +70,12 @@ Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
 
 | Plugin | Description |
 |---|---|
+| 📦 context | Context-window usage breakdown and visualization |
+| 🚪 exit-banner | Print a styled resume banner when pi exits |
+| 🙈 hide-tools | Toggle built-in tool result visibility |
 | 🔔 macnotify | macOS notifications for pi events |
+| 🎭 role | Session roles backed by markdown prompt files |
+| 🎨 session-color | Per-session accent colors for the UI |
 
 ## 🧑‍💻 Contributing
 
