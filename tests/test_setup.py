@@ -122,7 +122,7 @@ class TestCopyFile:
         assert stats["synced"] == 1
 
 
-class TestSyncPiPlugins:
+class TestSyncPiResources:
     def test_discover_pi_plugin_paths(self):
         stats = {"synced": 0, "skipped": 0, "warned": 0}
         pi_src = REPO_DIR / "pi-plugins"
@@ -132,38 +132,51 @@ class TestSyncPiPlugins:
         assert plugin_paths
         assert all(path.endswith("/index.ts") for path in plugin_paths)
 
-    def test_sync_pi_plugins_adds_missing_plugins(self, tmp_path, monkeypatch):
+    def test_discover_pi_theme_paths(self):
+        theme_paths = setup.discover_pi_theme_paths(REPO_DIR / "pi-themes")
+
+        assert theme_paths
+        assert all(path.endswith(".json") for path in theme_paths)
+
+    def test_sync_pi_resources_adds_missing_entries(self, tmp_path, monkeypatch):
         home = tmp_path / "home"
         settings_path = home / ".pi" / "agent" / "settings.json"
         settings_path.parent.mkdir(parents=True, exist_ok=True)
-        settings_path.write_text('{"extensions": ["/tmp/existing.ts"]}\n')
+        settings_path.write_text('{"extensions": ["/tmp/existing.ts"], "themes": ["/tmp/theme.json"]}\n')
 
         monkeypatch.setattr(setup, "REPO_DIR", REPO_DIR)
         monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
 
-        stats = setup.sync_pi_plugins(dry_run=False, verbose=False)
+        stats = setup.sync_pi_resources(dry_run=False, verbose=False)
         settings = setup.load_json_file(settings_path)
         plugin_paths = setup.discover_pi_plugin_paths(REPO_DIR / "pi-plugins", verbose=False, stats={"synced": 0, "skipped": 0, "warned": 0})
+        theme_paths = setup.discover_pi_theme_paths(REPO_DIR / "pi-themes")
 
-        assert stats["synced"] == len(plugin_paths)
+        assert stats["synced"] == len(plugin_paths) + len(theme_paths)
         assert settings["extensions"][0] == "/tmp/existing.ts"
         assert settings["extensions"][1:] == plugin_paths
+        assert settings["themes"][0] == "/tmp/theme.json"
+        assert settings["themes"][1:] == theme_paths
 
-    def test_sync_pi_plugins_removes_stale_managed_entries(self, tmp_path, monkeypatch):
+    def test_sync_pi_resources_removes_stale_managed_entries(self, tmp_path, monkeypatch):
         home = tmp_path / "home"
         settings_path = home / ".pi" / "agent" / "settings.json"
         settings_path.parent.mkdir(parents=True, exist_ok=True)
-        stale = str((REPO_DIR / "pi-plugins" / "stale-plugin" / "index.ts").resolve())
+        stale_plugin = str((REPO_DIR / "pi-plugins" / "stale-plugin" / "index.ts").resolve())
+        stale_theme = str((REPO_DIR / "pi-themes" / "stale-theme.json").resolve())
         settings_path.write_text(
-            '{"extensions": ["/tmp/existing.ts", ' + repr(stale).replace("'", '"') + ']}\n'
+            '{"extensions": ["/tmp/existing.ts", ' + repr(stale_plugin).replace("'", '"') + '], '
+            + '"themes": ["/tmp/theme.json", ' + repr(stale_theme).replace("'", '"') + ']}\n'
         )
 
         monkeypatch.setattr(setup, "REPO_DIR", REPO_DIR)
         monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
 
-        stats = setup.sync_pi_plugins(dry_run=False, verbose=False)
+        stats = setup.sync_pi_resources(dry_run=False, verbose=False)
         settings = setup.load_json_file(settings_path)
 
-        assert stale not in settings["extensions"]
+        assert stale_plugin not in settings["extensions"]
+        assert stale_theme not in settings["themes"]
         assert "/tmp/existing.ts" in settings["extensions"]
-        assert stats["synced"] >= 1
+        assert "/tmp/theme.json" in settings["themes"]
+        assert stats["synced"] >= 2

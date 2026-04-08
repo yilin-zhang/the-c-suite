@@ -23,14 +23,15 @@ Set up the-c-suite repository from scratch.
    ```
    Show the output to the user and ask if it looks good.
 
-4. **Sync skills, OpenCode plugins, and pi plugins**: Run for real:
+4. **Sync skills, OpenCode plugins, pi plugins, and pi themes**: Run for real:
    ```
    python3 <repo-root>/setup.py --verbose
    ```
    The script symlinks each skill directory into the target agent
    directories, copies OpenCode `.ts` plugins, symlinks OpenCode `.md`
-   commands, and registers pi plugin entrypoints in
-   `~/.pi/agent/settings.json` under `extensions`.
+   commands, registers pi plugin entrypoints in
+   `~/.pi/agent/settings.json` under `extensions`, and registers pi theme
+   files under `themes`.
 
 5. **OpenCode plugins**: For each directory under `<repo-root>/oc-plugins/`,
    read its `README.md` and follow any additional setup instructions there.
@@ -38,7 +39,10 @@ Set up the-c-suite repository from scratch.
 6. **pi plugins**: For each directory under `<repo-root>/pi-plugins/`,
    read its `README.md` and follow any additional setup instructions there.
 
-7. **Claude Code plugins**: Register the local marketplace and install
+7. **pi themes**: Read `<repo-root>/pi-themes/README.md` and ensure the
+   selected theme name in pi settings matches one of the synced theme files.
+
+8. **Claude Code plugins**: Register the local marketplace and install
    plugins:
    ```
    claude plugin marketplace add <repo-root>/marketplace
@@ -49,7 +53,7 @@ Set up the-c-suite repository from scratch.
    ```
    Available plugins: macnotify, cc-tts, claude-hud.
 
-8. **Report results**: Summarize what was synced and installed. If there
+9. **Report results**: Summarize what was synced and installed. If there
    were warnings about existing non-symlink files, explain that the user
    can remove them and re-run setup.
 

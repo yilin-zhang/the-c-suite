@@ -40,4 +40,8 @@ Remove everything installed by the-c-suite.
    - `~/.claude/plugins/claude-hud/config.json`
    Only remove if the user confirms.
 
-6. **Report** what was removed.
+6. **pi themes**: Remove any `~/.pi/agent/settings.json` entries under
+   `themes` that point into the repo's `pi-themes/` directory. Ask before
+   removing any copied or symlinked files under `~/.pi/agent/themes/`.
+
+7. **Report** what was removed.

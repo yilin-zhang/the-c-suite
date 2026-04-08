@@ -3,7 +3,7 @@ description: Synchronize skills and plugins to their target directories
 allowed-tools: Bash, Read
 ---
 
-Re-sync all skills, OpenCode plugins, pi plugins, and Claude Code plugins
+Re-sync all skills, OpenCode plugins, pi plugins, pi themes, and Claude Code plugins
 after pulling new changes.
 
 ## Steps
@@ -11,7 +11,7 @@ after pulling new changes.
 1. **Determine the repo root**: Use the directory containing this
    `commands/` folder, or `git rev-parse --show-toplevel`.
 
-2. **Sync skills, OpenCode plugins, and pi plugins**:
+2. **Sync skills, OpenCode plugins, pi plugins, and pi themes**:
    ```
    python3 <repo-root>/setup.py --verbose
    ```
@@ -25,11 +25,14 @@ after pulling new changes.
    read its `README.md` and follow the setup instructions there to ensure
    config and runtime assumptions are still correct.
 
-5. **Claude Code plugins**: Run `claude plugin update <name>` for each
+5. **pi themes**: Read `<repo-root>/pi-themes/README.md` and verify pi is
+   still configured to load the synced theme paths.
+
+6. **Claude Code plugins**: Run `claude plugin update <name>` for each
    installed the-c-suite plugin to pick up any changes. You can check
    which are installed with `claude plugin list`.
 
-6. **Report** the output summary to the user.
+7. **Report** the output summary to the user.
 
 ## Notes
 

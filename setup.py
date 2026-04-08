@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bootstrap the-c-suite: sync skills, OpenCode plugins, and pi plugins."""
+"""Bootstrap the-c-suite: sync skills, OpenCode plugins, pi plugins, and pi themes."""
 
 import argparse
 import json
@@ -153,19 +153,81 @@ def discover_pi_plugin_paths(pi_src: Path, verbose: bool, stats: dict) -> list[s
     return plugin_paths
 
 
-def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
-    """Register pi plugins in ~/.pi/agent/settings.json via the extensions array."""
+def discover_pi_theme_paths(theme_src: Path) -> list[str]:
+    """Return absolute pi theme file paths discovered under pi-themes/."""
+    return [str(path.resolve()) for path in sorted(theme_src.glob("*.json"))]
+
+
+def sync_settings_paths(
+    settings: dict,
+    key: str,
+    desired_paths: list[str],
+    managed_root: Path,
+    verbose: bool,
+    stats: dict,
+) -> tuple[dict | None, list[tuple[str, str]]]:
+    """Reconcile one managed settings path list while preserving unmanaged entries."""
+    current = settings.get(key, [])
+    if not isinstance(current, list):
+        if verbose:
+            print(f"  WARN: settings has non-list '{key}'; skipping sync")
+        stats["warned"] += 1
+        return None, []
+
+    managed_prefix = str(managed_root.resolve()) + "/"
+    managed_current = [path for path in current if isinstance(path, str) and path.startswith(managed_prefix)]
+    unmanaged = [path for path in current if not (isinstance(path, str) and path.startswith(managed_prefix))]
+
+    next_values = list(unmanaged)
+    changes: list[tuple[str, str]] = []
+
+    removed = [path for path in managed_current if path not in desired_paths]
+    for path in desired_paths:
+        if path in next_values:
+            if verbose:
+                print(f"  SKIP: {path} (already configured)")
+            stats["skipped"] += 1
+            continue
+        next_values.append(path)
+        if path in managed_current:
+            if verbose:
+                print(f"  SKIP: {path} (already configured)")
+            stats["skipped"] += 1
+        else:
+            changes.append(("add", path))
+
+    for path in removed:
+        changes.append(("remove", path))
+
+    if not changes:
+        return settings, []
+
+    updated_settings = dict(settings)
+    updated_settings[key] = next_values
+    return updated_settings, changes
+
+
+def sync_pi_resources(dry_run: bool, verbose: bool) -> dict:
+    """Register pi plugins and themes in ~/.pi/agent/settings.json."""
     stats = {"synced": 0, "skipped": 0, "warned": 0}
-    pi_src = REPO_DIR / "pi-plugins"
+    plugin_src = REPO_DIR / "pi-plugins"
+    theme_src = REPO_DIR / "pi-themes"
     settings_path = Path.home() / ".pi" / "agent" / "settings.json"
 
-    if not pi_src.is_dir():
-        if verbose:
-            print(f"No pi-plugins directory found at {pi_src}")
-        return stats
+    plugin_paths = []
+    theme_paths = []
 
-    plugin_paths = discover_pi_plugin_paths(pi_src, verbose, stats)
-    if not plugin_paths:
+    if plugin_src.is_dir():
+        plugin_paths = discover_pi_plugin_paths(plugin_src, verbose, stats)
+    elif verbose:
+        print(f"No pi-plugins directory found at {plugin_src}")
+
+    if theme_src.is_dir():
+        theme_paths = discover_pi_theme_paths(theme_src)
+    elif verbose:
+        print(f"No pi-themes directory found at {theme_src}")
+
+    if not plugin_paths and not theme_paths:
         return stats
 
     try:
@@ -175,55 +237,35 @@ def sync_pi_plugins(dry_run: bool, verbose: bool) -> dict:
         stats["warned"] += 1
         return stats
 
-    existing_extensions = settings.get("extensions", [])
-    if not isinstance(existing_extensions, list):
-        if verbose:
-            print(f"  WARN: {settings_path} has non-list 'extensions'; skipping pi plugin sync")
-        stats["warned"] += 1
+    all_changes = []
+    updated_settings = settings
+
+    if plugin_paths:
+        updated_settings, changes = sync_settings_paths(updated_settings, "extensions", plugin_paths, plugin_src, verbose, stats)
+        if updated_settings is None:
+            return stats
+        all_changes.extend(("extension", action, path) for action, path in changes)
+
+    if theme_paths:
+        updated_settings, changes = sync_settings_paths(updated_settings, "themes", theme_paths, theme_src, verbose, stats)
+        if updated_settings is None:
+            return stats
+        all_changes.extend(("theme", action, path) for action, path in changes)
+
+    if not all_changes:
         return stats
-
-    managed_prefix = str(pi_src.resolve()) + "/"
-    managed_current = [path for path in existing_extensions if isinstance(path, str) and path.startswith(managed_prefix)]
-    unmanaged = [path for path in existing_extensions if not (isinstance(path, str) and path.startswith(managed_prefix))]
-
-    next_extensions = list(unmanaged)
-    changes = []
-
-    removed = [path for path in managed_current if path not in plugin_paths]
-    for plugin_path in plugin_paths:
-        if plugin_path in next_extensions:
-            if verbose:
-                print(f"  SKIP: {plugin_path} (already configured)")
-            stats["skipped"] += 1
-            continue
-        next_extensions.append(plugin_path)
-        if plugin_path in managed_current:
-            if verbose:
-                print(f"  SKIP: {plugin_path} (already configured)")
-            stats["skipped"] += 1
-        else:
-            changes.append(("add", plugin_path))
-
-    for plugin_path in removed:
-        changes.append(("remove", plugin_path))
-
-    if not changes:
-        return stats
-
-    updated_settings = dict(settings)
-    updated_settings["extensions"] = next_extensions
 
     if dry_run:
-        for action, plugin_path in changes:
-            print(f"  [dry-run] {action} pi extension {plugin_path} in {settings_path}")
+        for kind, action, path in all_changes:
+            print(f"  [dry-run] {action} pi {kind} {path} in {settings_path}")
     else:
         settings_path.parent.mkdir(parents=True, exist_ok=True)
         settings_path.write_text(json.dumps(updated_settings, indent=2) + "\n")
         if verbose:
-            for action, plugin_path in changes:
-                print(f"  {action.upper()}: {plugin_path} ↔ {settings_path}#extensions")
+            for kind, action, path in all_changes:
+                print(f"  {action.upper()}: {path} ↔ {settings_path}#{'extensions' if kind == 'extension' else 'themes'}")
 
-    stats["synced"] += len(changes)
+    stats["synced"] += len(all_changes)
     return stats
 
 
@@ -251,7 +293,7 @@ def main():
     if do_oc:
         steps.append(("Syncing OpenCode plugins", sync_oc_plugins))
     if do_pi:
-        steps.append(("Syncing pi plugins", sync_pi_plugins))
+        steps.append(("Syncing pi resources", sync_pi_resources))
 
     print("the-c-suite setup")
     print("==================\n")

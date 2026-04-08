@@ -17,9 +17,10 @@ If you're an AI agent:
 - `marketplace/plugins/` — Claude Code plugins
 - `oc-plugins/` — OpenCode plugins
 - `pi-plugins/` — pi plugins
+- `pi-themes/` — pi themes
 - `commands/` — operator instructions for setup, sync, uninstall
 - `tests/` — repo validation
-- `setup.py` — sync script for skills, OpenCode plugins, and pi plugins
+- `setup.py` — sync script for skills, OpenCode plugins, pi plugins, and pi themes
 
 ## Notes
 
@@ -27,6 +28,8 @@ If you're an AI agent:
 - OpenCode plugins are synced by `setup.py`.
 - pi plugins are synced by `setup.py` into `~/.pi/agent/settings.json`
   via the `extensions` array.
+- pi themes are synced by `setup.py` into `~/.pi/agent/settings.json`
+  via the `themes` array.
 - For exact setup behavior, read `commands/setup.md` rather than this
   README.
 
@@ -111,3 +114,11 @@ Reusable agent workflows. Each skill lives in `skills/<name>/SKILL.md`.
 2. Add a `README.md` with usage and config instructions.
 3. `setup.py` will auto-discover it and add the absolute `index.ts` path
    to `~/.pi/agent/settings.json` under `extensions`.
+
+### Adding a pi theme
+
+1. Create `pi-themes/<name>.json`.
+2. Add any usage notes to `pi-themes/README.md` if needed.
+3. `setup.py` will auto-discover it and add the absolute theme path to
+   `~/.pi/agent/settings.json` under `themes`.
+4. Select it in pi with `"theme": "<name>"`.
